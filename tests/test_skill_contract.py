@@ -86,9 +86,15 @@ def test_skill_explains_why_commercial_names_require_legal_entity_evidence():
         "当前/历史状态",
         "证据",
         "适用限制",
-        "不开展人员或专利调查",
     ):
         assert concept in business_context
+
+
+def test_skill_omits_process_disclaimers_from_user_facing_copy():
+    frontmatter, body = read_frontmatter(SKILL_PATH)
+    user_facing_copy = f'{frontmatter["description"]}\n{body}'
+
+    assert "本 Skill 不" not in user_facing_copy
 
 
 def test_agent_config_keeps_automatic_discovery_enabled():
