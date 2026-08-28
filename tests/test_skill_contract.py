@@ -3,8 +3,10 @@ import importlib
 import json
 from pathlib import Path
 
+from tests.helpers import SKILL_ROOT
 
-ROOT = Path(__file__).resolve().parents[1]
+
+ROOT = SKILL_ROOT
 SKILL_PATH = ROOT / "SKILL.md"
 AGENT_CONFIG_PATH = ROOT / "agents" / "openai.yaml"
 RULES_PATH = ROOT / "references" / "review-rules.md"

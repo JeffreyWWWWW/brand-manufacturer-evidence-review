@@ -12,7 +12,7 @@ from docx.shared import RGBColor
 
 from scripts.render_evidence_review_report import DEFAULT_STYLE_PATH, render_report
 from scripts.validate_evidence_review import compute_content_hash
-from tests.helpers import cloned_fixture
+from tests.helpers import SKILL_ROOT, cloned_fixture
 
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -275,7 +275,6 @@ def test_renderer_is_deterministic_for_document_style_and_settings_xml(tmp_path)
 
 
 def test_cli_overwrites_only_requested_output_and_returns_one_on_invalid_json(tmp_path):
-    root = Path(__file__).resolve().parents[1]
     input_path = tmp_path / "confirmed.json"
     output_path = tmp_path / "report.docx"
     sibling = tmp_path / "keep.txt"
@@ -283,14 +282,14 @@ def test_cli_overwrites_only_requested_output_and_returns_one_on_invalid_json(tm
     input_path.write_text(json.dumps(confirmed_payload(), ensure_ascii=False), encoding="utf-8")
     output_path.write_bytes(b"old")
     command = [sys.executable, "scripts/render_evidence_review_report.py", str(input_path), str(output_path)]
-    result = subprocess.run(command, cwd=root, capture_output=True, text=True, check=False)
+    result = subprocess.run(command, cwd=SKILL_ROOT, capture_output=True, text=True, check=False)
     assert result.returncode == 0
     assert output_path.exists() and output_path.read_bytes() != b"old"
     assert sibling.read_text(encoding="utf-8") == "retain"
 
     input_path.write_text(json.dumps(cloned_fixture("minimal-valid-review.json"), ensure_ascii=False), encoding="utf-8")
     before = output_path.read_bytes()
-    result = subprocess.run(command, cwd=root, capture_output=True, text=True, check=False)
+    result = subprocess.run(command, cwd=SKILL_ROOT, capture_output=True, text=True, check=False)
     assert result.returncode == 1
     assert "NOT_CONFIRMED" in result.stdout
     assert output_path.read_bytes() == before

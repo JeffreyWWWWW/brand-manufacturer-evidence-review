@@ -1,12 +1,10 @@
 import json
-from pathlib import Path
-
 import jsonschema
 import pytest
 
-from tests.helpers import cloned_fixture, load_fixture
+from tests.helpers import SKILL_ROOT, cloned_fixture, load_fixture
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = SKILL_ROOT
 SCHEMA_PATH = ROOT / "references" / "evidence-review.schema.json"
 
 TOP_LEVEL_REQUIRED = (

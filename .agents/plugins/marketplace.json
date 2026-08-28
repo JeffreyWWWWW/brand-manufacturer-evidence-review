@@ -1,0 +1,20 @@
+{
+  "name": "brand-manufacturer-evidence-review",
+  "interface": {
+    "displayName": "Brand Manufacturer Evidence Review"
+  },
+  "plugins": [
+    {
+      "name": "brand-manufacturer-evidence-review",
+      "source": {
+        "source": "local",
+        "path": "./plugins/brand-manufacturer-evidence-review"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

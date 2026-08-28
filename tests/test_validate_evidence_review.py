@@ -11,7 +11,7 @@ from scripts.validate_evidence_review import (
     compute_content_hash,
     validate_payload,
 )
-from tests.helpers import cloned_fixture
+from tests.helpers import SKILL_ROOT, cloned_fixture
 
 
 def test_valid_draft_has_no_issues():
@@ -563,7 +563,7 @@ def test_schema_error_does_not_prevent_safe_business_checks():
 
 
 def test_cli_has_expected_exit_codes():
-    root = Path(__file__).resolve().parents[1]
+    root = SKILL_ROOT
     valid_path = root / ".task3-cli-valid.json"
     command = [sys.executable, "scripts/validate_evidence_review.py", str(valid_path)]
     invalid_path = root / ".task3-cli-invalid.json"
