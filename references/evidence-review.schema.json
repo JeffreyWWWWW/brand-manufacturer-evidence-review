@@ -1,0 +1,313 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "规范版本",
+    "报告信息",
+    "输入材料",
+    "调查范围",
+    "证据链方法",
+    "品牌复核结果",
+    "主体索引",
+    "主体关系",
+    "总体复核分级",
+    "数据库访问记录",
+    "使用限制与建议",
+    "用户确认"
+  ],
+  "properties": {
+    "规范版本": {"$ref": "#/$defs/freeText"},
+    "报告信息": {"$ref": "#/$defs/reportInfo"},
+    "输入材料": {"type": "array", "items": {"$ref": "#/$defs/inputSource"}},
+    "调查范围": {"$ref": "#/$defs/investigationScope"},
+    "证据链方法": {"type": "array", "items": {"$ref": "#/$defs/evidenceStep"}},
+    "品牌复核结果": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/brandReview"}},
+    "主体索引": {"type": "array", "items": {"$ref": "#/$defs/entity"}},
+    "主体关系": {"type": "array", "items": {"$ref": "#/$defs/relationship"}},
+    "总体复核分级": {"type": "array", "items": {"$ref": "#/$defs/overallClass"}},
+    "数据库访问记录": {"type": "array", "items": {"$ref": "#/$defs/databaseAccess"}},
+    "使用限制与建议": {"type": "array", "items": {"$ref": "#/$defs/freeText"}},
+    "用户确认": {"$ref": "#/$defs/confirmation"}
+  },
+  "$defs": {
+    "freeText": {
+      "type": "string",
+      "pattern": "^(?!\\s*(?:/|[nN]/[aA])\\s*$)[\\s\\S]*\\S[\\s\\S]*$"
+    },
+    "freeTextOrNull": {
+      "type": ["string", "null"],
+      "pattern": "^(?!\\s*(?:/|[nN]/[aA])\\s*$)[\\s\\S]*\\S[\\s\\S]*$"
+    },
+    "rfc3339DateTime": {
+      "type": "string",
+      "pattern": "^(?:(?:[0-9]{4}-(?:(?:01|03|05|07|08|10|12)-(?:0[1-9]|[12][0-9]|3[01])|(?:04|06|09|11)-(?:0[1-9]|[12][0-9]|30)|02-(?:0[1-9]|1[0-9]|2[0-8]))|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29)[Tt](?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?|[0-9]{4}-(?:06-30|12-31)[Tt]23:59:60(?:\\.[0-9]+)?)(?:[Zz]|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])(?![\\s\\S])"
+    },
+    "sourceId": {"type": "string", "pattern": "^SRC-[0-9]{3,}(?![\\s\\S])"},
+    "evidenceId": {"type": "string", "pattern": "^EVD-[0-9]{3,}(?![\\s\\S])"},
+    "brandId": {"type": "string", "pattern": "^BRD-[0-9]{3,}(?![\\s\\S])"},
+    "productId": {"type": "string", "pattern": "^PRD-[0-9]{3,}(?![\\s\\S])"},
+    "entityId": {"type": "string", "pattern": "^ENT-[0-9]{3,}(?![\\s\\S])"},
+    "relationshipId": {"type": "string", "pattern": "^REL-[0-9]{3,}(?![\\s\\S])"},
+    "reliability": {"type": "string", "enum": ["高", "中", "低"]},
+    "conclusionStatus": {"type": "string", "enum": ["已确认", "候选", "证据不足", "存在冲突"]},
+    "currentStatus": {"type": "string", "enum": ["当前", "历史", "不确定"]},
+    "entityRole": {
+      "type": "string",
+      "enum": ["商标权利人", "品牌运营主体", "品牌层面制造商", "具体SKU制造商", "母公司", "控制主体", "收购方", "历史权利人"]
+    },
+    "manufacturingMode": {"type": "string", "enum": ["自有制造", "集团内制造", "委托制造", "多供应商", "混合模式", "未知"]},
+    "evidenceLevel": {"type": "string", "enum": ["官方登记", "官方企业资料", "官方产品文件", "监管或法院文件", "可靠商业资料", "其他资料"]},
+    "uriOrNull": {"type": ["string", "null"], "minLength": 1, "format": "uri", "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"},
+    "evidenceReferences": {"type": "array", "items": {"$ref": "#/$defs/evidenceId"}},
+    "limitations": {"type": "array", "items": {"$ref": "#/$defs/freeText"}},
+    "reportInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["报告标题", "调查日期", "生成时间", "底稿编号"],
+      "properties": {
+        "报告标题": {"$ref": "#/$defs/freeText"},
+        "调查日期": {"type": "string", "format": "date"},
+        "生成时间": {"$ref": "#/$defs/rfc3339DateTime"},
+        "底稿编号": {"$ref": "#/$defs/freeText"}
+      }
+    },
+    "inputSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["来源编号", "来源类型", "文件名或URL", "客户提供", "内容摘要"],
+      "properties": {
+        "来源编号": {"$ref": "#/$defs/sourceId"},
+        "来源类型": {"$ref": "#/$defs/freeText"},
+        "文件名或URL": {"$ref": "#/$defs/freeTextOrNull"},
+        "客户提供": {"type": "boolean"},
+        "内容摘要": {"$ref": "#/$defs/freeText"}
+      }
+    },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["商品ID", "平台", "原始URL", "平台标识符", "型号", "SKU", "证据引用"],
+      "properties": {
+        "商品ID": {"$ref": "#/$defs/productId"},
+        "平台": {"$ref": "#/$defs/freeText"},
+        "原始URL": {"$ref": "#/$defs/uriOrNull"},
+        "平台标识符": {"$ref": "#/$defs/freeTextOrNull"},
+        "型号": {"$ref": "#/$defs/freeTextOrNull"},
+        "SKU": {"$ref": "#/$defs/freeTextOrNull"},
+        "证据引用": {"$ref": "#/$defs/evidenceReferences"}
+      }
+    },
+    "brand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["品牌ID", "原始名称", "规范名称", "证据引用"],
+      "properties": {
+        "品牌ID": {"$ref": "#/$defs/brandId"},
+        "原始名称": {"$ref": "#/$defs/freeText"},
+        "规范名称": {"$ref": "#/$defs/freeText"},
+        "证据引用": {"$ref": "#/$defs/evidenceReferences"}
+      }
+    },
+    "investigationScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["产品原始名称", "产品规范名称", "产品描述", "代表性商品", "目标品牌"],
+      "properties": {
+        "产品原始名称": {"$ref": "#/$defs/freeText"},
+        "产品规范名称": {"$ref": "#/$defs/freeText"},
+        "产品描述": {"$ref": "#/$defs/freeText"},
+        "代表性商品": {"type": "array", "items": {"$ref": "#/$defs/product"}},
+        "目标品牌": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/brand"}}
+      }
+    },
+    "evidenceStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["步骤编号", "名称", "执行方法", "证据优先级"],
+      "properties": {
+        "步骤编号": {"$ref": "#/$defs/freeText"},
+        "名称": {"$ref": "#/$defs/freeText"},
+        "执行方法": {"$ref": "#/$defs/freeText"},
+        "证据优先级": {"type": "array", "items": {"$ref": "#/$defs/evidenceLevel"}}
+      }
+    },
+    "entityLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["主体ID", "结论状态", "可靠性等级", "证据引用", "适用限制"],
+      "properties": {
+        "主体ID": {"$ref": "#/$defs/entityId"},
+        "结论状态": {"$ref": "#/$defs/conclusionStatus"},
+        "可靠性等级": {"$ref": "#/$defs/reliability"},
+        "证据引用": {"$ref": "#/$defs/evidenceReferences"},
+        "适用限制": {"$ref": "#/$defs/limitations"}
+      }
+    },
+    "skuEntityLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["主体ID", "适用商品ID", "结论状态", "可靠性等级", "证据引用", "适用限制"],
+      "properties": {
+        "主体ID": {"$ref": "#/$defs/entityId"},
+        "适用商品ID": {"type": "array", "items": {"$ref": "#/$defs/productId"}},
+        "结论状态": {"$ref": "#/$defs/conclusionStatus"},
+        "可靠性等级": {"$ref": "#/$defs/reliability"},
+        "证据引用": {"$ref": "#/$defs/evidenceReferences"},
+        "适用限制": {"$ref": "#/$defs/limitations"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["证据编号", "来源名称", "URL", "来源类别", "访问日期", "支持结论", "证据等级"],
+      "properties": {
+        "证据编号": {"$ref": "#/$defs/evidenceId"},
+        "来源名称": {"$ref": "#/$defs/freeText"},
+        "URL": {"$ref": "#/$defs/uriOrNull"},
+        "来源类别": {"$ref": "#/$defs/freeText"},
+        "访问日期": {"type": "string", "format": "date"},
+        "支持结论": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/freeText"}},
+        "证据等级": {"$ref": "#/$defs/evidenceLevel"}
+      }
+    },
+    "brandDisplay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["原始名称", "规范名称"],
+      "properties": {
+        "原始名称": {"$ref": "#/$defs/freeText"},
+        "规范名称": {"$ref": "#/$defs/freeText"}
+      }
+    },
+    "brandSubjectRelationships": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["商标权利人", "品牌运营主体", "母公司", "收购与历史关系"],
+      "properties": {
+        "商标权利人": {"type": "array", "items": {"$ref": "#/$defs/entityLink"}},
+        "品牌运营主体": {"type": "array", "items": {"$ref": "#/$defs/entityLink"}},
+        "母公司": {"type": "array", "items": {"$ref": "#/$defs/entityLink"}},
+        "收购与历史关系": {"type": "array", "items": {"$ref": "#/$defs/entityLink"}}
+      }
+    },
+    "manufacturingRelationships": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["品牌层面主要制造商", "具体SKU制造商", "制造模式", "SKU适用限制"],
+      "properties": {
+        "品牌层面主要制造商": {"type": "array", "items": {"$ref": "#/$defs/entityLink"}},
+        "具体SKU制造商": {"type": "array", "items": {"$ref": "#/$defs/skuEntityLink"}},
+        "制造模式": {"$ref": "#/$defs/manufacturingMode"},
+        "SKU适用限制": {"type": "array", "items": {"$ref": "#/$defs/freeText"}}
+      }
+    },
+    "conclusionEvaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["可靠性等级", "可靠性依据", "人工复核建议"],
+      "properties": {
+        "可靠性等级": {"$ref": "#/$defs/reliability"},
+        "可靠性依据": {"$ref": "#/$defs/freeText"},
+        "人工复核建议": {"$ref": "#/$defs/freeText"}
+      }
+    },
+    "brandReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["品牌", "实际查询路径", "查询结果摘要", "主体关系", "制造关系", "结论评价", "关键说明", "主要来源"],
+      "properties": {
+        "品牌": {"$ref": "#/$defs/brandDisplay"},
+        "实际查询路径": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/freeText"}},
+        "查询结果摘要": {"$ref": "#/$defs/freeText"},
+        "主体关系": {"$ref": "#/$defs/brandSubjectRelationships"},
+        "制造关系": {"$ref": "#/$defs/manufacturingRelationships"},
+        "结论评价": {"$ref": "#/$defs/conclusionEvaluation"},
+        "关键说明": {"type": "array", "items": {"$ref": "#/$defs/freeText"}},
+        "主要来源": {"type": "array", "items": {"$ref": "#/$defs/evidence"}}
+      }
+    },
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["主体ID", "规范名称", "名称变体", "主体类型", "司法辖区", "注册标识", "官方网站", "关联品牌", "主体角色", "当前状态", "结论状态", "可靠性等级", "证据引用", "适用限制"],
+      "properties": {
+        "主体ID": {"$ref": "#/$defs/entityId"},
+        "规范名称": {"$ref": "#/$defs/freeText"},
+        "名称变体": {"type": "array", "items": {"$ref": "#/$defs/freeText"}},
+        "主体类型": {"type": "string", "enum": ["公司", "其他组织", "未确认"]},
+        "司法辖区": {"$ref": "#/$defs/freeText"},
+        "注册标识": {"type": "array", "items": {"$ref": "#/$defs/freeText"}},
+        "官方网站": {"type": "array", "items": {"$ref": "#/$defs/uriOrNull"}},
+        "关联品牌": {"type": "array", "items": {"$ref": "#/$defs/brandId"}},
+        "主体角色": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/entityRole"}},
+        "当前状态": {"$ref": "#/$defs/currentStatus"},
+        "结论状态": {"$ref": "#/$defs/conclusionStatus"},
+        "可靠性等级": {"$ref": "#/$defs/reliability"},
+        "证据引用": {"$ref": "#/$defs/evidenceReferences"},
+        "适用限制": {"$ref": "#/$defs/limitations"}
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["关系ID", "起点类型", "起点ID", "关系类型", "终点类型", "终点ID", "时间状态", "适用层级", "适用商品ID", "结论状态", "可靠性等级", "证据引用", "适用限制"],
+      "properties": {
+        "关系ID": {"$ref": "#/$defs/relationshipId"},
+        "起点类型": {"type": "string", "enum": ["品牌", "主体", "商品"]},
+        "起点ID": {"anyOf": [{"$ref": "#/$defs/brandId"}, {"$ref": "#/$defs/entityId"}, {"$ref": "#/$defs/productId"}]},
+        "关系类型": {"$ref": "#/$defs/entityRole"},
+        "终点类型": {"type": "string", "enum": ["品牌", "主体", "商品"]},
+        "终点ID": {"anyOf": [{"$ref": "#/$defs/brandId"}, {"$ref": "#/$defs/entityId"}, {"$ref": "#/$defs/productId"}]},
+        "时间状态": {"$ref": "#/$defs/currentStatus"},
+        "适用层级": {"type": "string", "enum": ["品牌级", "SKU级"]},
+        "适用商品ID": {"type": "array", "items": {"$ref": "#/$defs/productId"}},
+        "结论状态": {"$ref": "#/$defs/conclusionStatus"},
+        "可靠性等级": {"$ref": "#/$defs/reliability"},
+        "证据引用": {"$ref": "#/$defs/evidenceReferences"},
+        "适用限制": {"$ref": "#/$defs/limitations"}
+      },
+      "allOf": [
+        {"if": {"properties": {"起点类型": {"const": "品牌"}}}, "then": {"properties": {"起点ID": {"$ref": "#/$defs/brandId"}}}},
+        {"if": {"properties": {"起点类型": {"const": "主体"}}}, "then": {"properties": {"起点ID": {"$ref": "#/$defs/entityId"}}}},
+        {"if": {"properties": {"起点类型": {"const": "商品"}}}, "then": {"properties": {"起点ID": {"$ref": "#/$defs/productId"}}}},
+        {"if": {"properties": {"终点类型": {"const": "品牌"}}}, "then": {"properties": {"终点ID": {"$ref": "#/$defs/brandId"}}}},
+        {"if": {"properties": {"终点类型": {"const": "主体"}}}, "then": {"properties": {"终点ID": {"$ref": "#/$defs/entityId"}}}},
+        {"if": {"properties": {"终点类型": {"const": "商品"}}}, "then": {"properties": {"终点ID": {"$ref": "#/$defs/productId"}}}}
+      ]
+    },
+    "overallClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["复核等级", "品牌", "适用结论"],
+      "properties": {
+        "复核等级": {"$ref": "#/$defs/reliability"},
+        "品牌": {"type": "array", "items": {"$ref": "#/$defs/brandId"}},
+        "适用结论": {"$ref": "#/$defs/freeText"}
+      }
+    },
+    "databaseAccess": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["数据库", "官方入口", "访问时间", "访问结果", "使用建议"],
+      "properties": {
+        "数据库": {"$ref": "#/$defs/freeText"},
+        "官方入口": {"$ref": "#/$defs/uriOrNull"},
+        "访问时间": {"$ref": "#/$defs/rfc3339DateTime"},
+        "访问结果": {"$ref": "#/$defs/freeText"},
+        "使用建议": {"$ref": "#/$defs/freeText"}
+      }
+    },
+    "confirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["是否确认", "确认时间", "用户确认原文", "内容摘要哈希"],
+      "properties": {
+        "是否确认": {"type": "boolean"},
+        "确认时间": {"anyOf": [{"$ref": "#/$defs/rfc3339DateTime"}, {"type": "null"}]},
+        "用户确认原文": {"$ref": "#/$defs/freeTextOrNull"},
+        "内容摘要哈希": {"$ref": "#/$defs/freeTextOrNull"}
+      }
+    }
+  }
+}

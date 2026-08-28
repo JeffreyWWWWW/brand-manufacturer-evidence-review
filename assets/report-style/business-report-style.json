@@ -1,0 +1,8 @@
+{
+  "page": {"size": "A4", "margin_top_mm": 20, "margin_right_mm": 20, "margin_bottom_mm": 20, "margin_left_mm": 22},
+  "fonts": {"east_asia": "Microsoft YaHei", "latin": "Aptos"},
+  "sizes_pt": {"title": 20, "subtitle": 10.5, "heading1": 15, "heading2": 12, "body": 10.5, "table": 9},
+  "spacing_pt": {"body_after": 6, "heading1_before": 16, "heading1_after": 8, "heading2_before": 12, "heading2_after": 6},
+  "colors": {"primary": "1F4E78", "secondary": "D9EAF7", "text": "222222", "muted": "666666", "border": "B7C9D6"},
+  "table": {"cell_margin_twips": 100, "header_repeat": true}
+}
