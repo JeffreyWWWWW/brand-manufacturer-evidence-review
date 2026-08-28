@@ -4,6 +4,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 .worktrees/
+/tests/
 outputs/verification/
 weight-distribution-hitch/
 tests/fixtures/weight-distribution-hitch/
