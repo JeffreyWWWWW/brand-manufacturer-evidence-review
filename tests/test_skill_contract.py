@@ -12,9 +12,11 @@ AGENT_CONFIG_PATH = ROOT / "agents" / "openai.yaml"
 RULES_PATH = ROOT / "references" / "review-rules.md"
 SCHEMA_PATH = ROOT / "references" / "evidence-review.schema.json"
 SCRIPT_PATHS = (
+    ROOT / "scripts" / "check_runtime_dependencies.py",
     ROOT / "scripts" / "validate_evidence_review.py",
     ROOT / "scripts" / "render_evidence_review_report.py",
 )
+RUNTIME_REQUIREMENTS_PATH = ROOT / "requirements-runtime.txt"
 
 
 def read_frontmatter(path: Path) -> tuple[dict[str, str], str]:
@@ -66,7 +68,7 @@ def test_skill_entrypoint_declares_name_and_required_resources():
 
 
 def test_task_resources_parse_and_scripts_import():
-    for path in (RULES_PATH, SCHEMA_PATH, *SCRIPT_PATHS):
+    for path in (RULES_PATH, SCHEMA_PATH, RUNTIME_REQUIREMENTS_PATH, *SCRIPT_PATHS):
         assert path.is_file()
     assert json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))["$schema"]
     assert importlib.import_module("scripts.validate_evidence_review")
@@ -151,3 +153,13 @@ def test_skill_requires_explicit_confirmation_before_final_outputs():
     assert "沉默不构成确认" in body
     assert "brand-manufacturer-evidence-review.json" in body
     assert "brand-manufacturer-evidence-review.docx" in body
+
+
+def test_skill_checks_runtime_dependencies_before_running_scripts():
+    _, body = read_frontmatter(SKILL_PATH)
+
+    dependency_check = body.index("scripts/check_runtime_dependencies.py")
+    validator = body.index("scripts/validate_evidence_review.py")
+    renderer = body.index("scripts/render_evidence_review_report.py")
+    assert dependency_check < validator < renderer
+    assert "requirements-runtime.txt" in body

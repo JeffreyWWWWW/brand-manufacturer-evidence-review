@@ -13,6 +13,8 @@ codex plugin add brand-manufacturer-evidence-review@brand-manufacturer-evidence-
 
 也可以先添加 marketplace，然后在 Codex 中输入 `/plugins`，选择 `Brand Manufacturer Evidence Review` 并安装。安装完成后新建一个任务，使 Codex 加载插件中的 skill。
 
+首次执行时，skill 会运行 `scripts/check_runtime_dependencies.py`。如果本地 Python 缺少 `jsonschema` 或 `python-docx`，该检查会输出基于插件内 `requirements-runtime.txt` 的精确安装命令。
+
 ## 使用
 
 在新任务中提供产品、品牌和商品链接或原始调查材料，例如：
@@ -38,8 +40,17 @@ codex plugin add brand-manufacturer-evidence-review@brand-manufacturer-evidence-
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
 $env:PYTHONUTF8 = "1"
-python C:\Users\<user>\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py plugins\brand-manufacturer-evidence-review
-python C:\Users\<user>\.codex\skills\.system\skill-creator\scripts\quick_validate.py plugins\brand-manufacturer-evidence-review\skills\brand-manufacturer-evidence-review
+python "$env:CODEX_HOME\skills\.system\plugin-creator\scripts\validate_plugin.py" plugins\brand-manufacturer-evidence-review
+python "$env:CODEX_HOME\skills\.system\skill-creator\scripts\quick_validate.py" plugins\brand-manufacturer-evidence-review\skills\brand-manufacturer-evidence-review
+```
+
+macOS 或 Linux：
+
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+PYTHONUTF8=1 python "$CODEX_HOME/skills/.system/plugin-creator/scripts/validate_plugin.py" plugins/brand-manufacturer-evidence-review
+PYTHONUTF8=1 python "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" plugins/brand-manufacturer-evidence-review/skills/brand-manufacturer-evidence-review
 ```
 
 Marketplace 入口位于 `.agents/plugins/marketplace.json`，因此该 GitHub 仓库本身就是可被 Codex 添加和升级的插件来源。

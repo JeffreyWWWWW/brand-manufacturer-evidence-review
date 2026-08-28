@@ -1,3 +1,2 @@
-jsonschema>=4.26,<5
-python-docx>=1.2,<2
+-r plugins/brand-manufacturer-evidence-review/skills/brand-manufacturer-evidence-review/requirements-runtime.txt
 pytest>=8.4,<9
