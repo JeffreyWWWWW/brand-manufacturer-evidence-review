@@ -1,0 +1,33 @@
+{
+  "name": "brand-manufacturer-evidence-review",
+  "version": "1.0.0",
+  "description": "Review evidence connecting product brands to legal entities and manufacturers, then produce traceable JSON and DOCX reports.",
+  "author": {
+    "name": "JeffreyWWWWW",
+    "url": "https://github.com/JeffreyWWWWW"
+  },
+  "homepage": "https://github.com/JeffreyWWWWW/brand-manufacturer-evidence-review",
+  "repository": "https://github.com/JeffreyWWWWW/brand-manufacturer-evidence-review",
+  "keywords": [
+    "brand",
+    "manufacturer",
+    "evidence-review",
+    "legal-entity"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Brand Manufacturer Evidence Review",
+    "shortDescription": "Trace brands to legal entities and manufacturers.",
+    "longDescription": "Review product, trademark, corporate, and manufacturing evidence; distinguish brand-level facts from SKU-level proof; and generate validated JSON and DOCX reports after user confirmation.",
+    "developerName": "JeffreyWWWWW",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/JeffreyWWWWW/brand-manufacturer-evidence-review",
+    "defaultPrompt": [
+      "Review these products' brand owners and manufacturers."
+    ]
+  }
+}

@@ -1,0 +1,2 @@
+jsonschema>=4.26,<5
+python-docx>=1.2,<2

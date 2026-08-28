@@ -11,7 +11,7 @@ description: 复核产品品牌与商标权利人、品牌运营主体、母公�
 
 在对话中展示品牌、主体角色、制造范围、可靠性、证据和限制的完整摘要。用户修正后重新校验；只有用户明确确认时才写入最终 JSON。沉默不构成确认。
 
-使用 `scripts/validate_evidence_review.py` 校验最终 JSON。校验通过且用户确认一致后，使用 `scripts/render_evidence_review_report.py` 仅从该 JSON 生成 DOCX，并逐页渲染检查。
+运行 `scripts/check_runtime_dependencies.py` 检查运行依赖。如果缺失依赖，先按其输出的命令从 `requirements-runtime.txt` 安装；然后使用 `scripts/validate_evidence_review.py` 校验最终 JSON。校验通过且用户确认一致后，使用 `scripts/render_evidence_review_report.py` 仅从该 JSON 生成 DOCX，并逐页渲染检查。
 
 最终交付：
 
