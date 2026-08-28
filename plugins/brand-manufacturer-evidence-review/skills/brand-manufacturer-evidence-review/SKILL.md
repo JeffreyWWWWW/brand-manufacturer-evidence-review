@@ -15,5 +15,9 @@ description: 复核产品品牌与商标权利人、品牌运营主体、母公�
 
 最终交付：
 
-- `outputs/brand-manufacturer-evidence-review.json`
-- `outputs/brand-manufacturer-evidence-review.docx`
+- `outputs/<项目或品牌范围>_品牌权属与制造商证据底稿_<YYYYMMDD>.json`
+- `outputs/<项目或品牌范围>_品牌权属与制造商证据复核报告_<YYYYMMDD>.docx`
+
+`<项目或品牌范围>` 使用客户项目名；没有项目名时，根据报告覆盖范围概括为品牌名或品牌数量，例如 `十品牌`。`<YYYYMMDD>` 取 `报告信息.调查日期` 并去除分隔符。文件名须清理 Windows 文件名不允许的字符，并保持 JSON 与 DOCX 的项目范围和日期一致。同一范围、同一调查日期重新生成正式交付物时覆盖同名文件，不追加随机编号。
+
+示例：`outputs/十品牌_品牌权属与制造商证据复核报告_20260813.docx`。
