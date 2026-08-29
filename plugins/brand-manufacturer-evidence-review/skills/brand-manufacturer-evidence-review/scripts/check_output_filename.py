@@ -40,8 +40,12 @@ def expected_names(payload: dict) -> tuple[str, str]:
     )
 
 
-def validate(payload_path: Path, json_path: Path, docx_path: Path) -> None:
-    payload = json.loads(payload_path.read_text(encoding="utf-8"))
+def validate(payload_or_path: dict | Path, json_path: Path, docx_path: Path) -> None:
+    payload = (
+        json.loads(payload_or_path.read_text(encoding="utf-8"))
+        if isinstance(payload_or_path, Path)
+        else payload_or_path
+    )
     expected_json, expected_docx = expected_names(payload)
     if json_path.name != expected_json:
         raise ValueError(f"JSON_FILENAME_MISMATCH expected={expected_json} actual={json_path.name}")
