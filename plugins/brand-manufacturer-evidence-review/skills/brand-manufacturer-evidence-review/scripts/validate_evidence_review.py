@@ -524,6 +524,25 @@ def _check_confirmation(payload: Mapping[str, Any], issues: list[ValidationIssue
         _issue(issues, path, "NOT_CONFIRMED", "report requires explicit confirmation")
 
 
+def _check_research_gate(payload: Mapping[str, Any], issues: list[ValidationIssue]) -> None:
+    records = _mappings(payload.get("网络检索记录"))
+    text = " ".join(str(item.get("入口URL", "")) + " " + str(item.get("访问结果", "")) for item in records).lower()
+    official = any(any(token in text for token in ("uspto", "wipo", "cipo", "euipo", "nhtsa", "监管", "官方登记")) for _ in [0])
+    brand_official = any(any(token in text for token in ("about", "terms", "warranty", "product", "manufacturer")) for _ in [0])
+    if len(records) < 2 or not official or not brand_official:
+        _issue(issues, "网络检索记录", "RESEARCH_GATE_NOT_MET", "requires recorded official registry/regulatory and brand/product official searches")
+
+
+def _check_sku_completeness(payload: Mapping[str, Any], issues: list[ValidationIssue]) -> None:
+    keys = ("包装标签", "产品铭牌", "型号或UPC", "说明书Manufacturer", "说明书Importer", "平台销售字段", "合规或监管文件")
+    for index, product in enumerate(_mappings(_mapping(payload.get("调查范围")).get("代表性商品"))):
+        checklist = _mapping(product.get("SKU证据核验"))
+        count = sum(1 for key in keys if _mapping(checklist.get(key)).get("状态") == "已取得")
+        expected = f"{count}/7"
+        if checklist.get("证据完整度") != expected:
+            _issue(issues, _path("调查范围", "代表性商品", index, "SKU证据核验", "证据完整度"), "SKU_COMPLETENESS_MISMATCH", f"expected {expected}, got {checklist.get('证据完整度')}")
+
+
 def validate_payload(
     payload: Mapping[str, Any], schema_path: Path | None = None, require_confirmed: bool = False
 ) -> list[ValidationIssue]:
@@ -540,6 +559,8 @@ def validate_payload(
     product_bindings = _check_review_views(payload, ids, review_brands, review_evidence, issues)
     _check_entity_view(payload, entity_brands, product_bindings, issues)
     _check_overall_classification(payload, ids, issues)
+    _check_research_gate(payload, issues)
+    _check_sku_completeness(payload, issues)
     _check_confirmation(payload, issues, require_confirmed)
     return sorted(set(issues))
 

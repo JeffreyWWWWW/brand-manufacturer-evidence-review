@@ -8,6 +8,8 @@
     "输入材料",
     "调查范围",
     "证据链方法",
+    "网络检索记录",
+    "主张证据矩阵",
     "品牌复核结果",
     "主体索引",
     "主体关系",
@@ -22,6 +24,8 @@
     "输入材料": {"type": "array", "items": {"$ref": "#/$defs/inputSource"}},
     "调查范围": {"$ref": "#/$defs/investigationScope"},
     "证据链方法": {"type": "array", "items": {"$ref": "#/$defs/evidenceStep"}},
+    "网络检索记录": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/webSearchRecord"}},
+    "主张证据矩阵": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/claimEvidence"}},
     "品牌复核结果": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/brandReview"}},
     "主体索引": {"type": "array", "items": {"$ref": "#/$defs/entity"}},
     "主体关系": {"type": "array", "items": {"$ref": "#/$defs/relationship"}},
@@ -89,7 +93,7 @@
     "product": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["商品ID", "平台", "原始URL", "平台标识符", "型号", "SKU", "证据引用"],
+      "required": ["商品ID", "平台", "原始URL", "平台标识符", "型号", "SKU", "SKU证据核验", "证据引用"],
       "properties": {
         "商品ID": {"$ref": "#/$defs/productId"},
         "平台": {"$ref": "#/$defs/freeText"},
@@ -97,6 +101,7 @@
         "平台标识符": {"$ref": "#/$defs/freeTextOrNull"},
         "型号": {"$ref": "#/$defs/freeTextOrNull"},
         "SKU": {"$ref": "#/$defs/freeTextOrNull"},
+        "SKU证据核验": {"$ref": "#/$defs/skuEvidenceChecklist"},
         "证据引用": {"$ref": "#/$defs/evidenceReferences"}
       }
     },
@@ -162,7 +167,7 @@
     "evidence": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["证据编号", "来源名称", "URL", "来源类别", "访问日期", "支持结论", "证据等级"],
+      "required": ["证据编号", "来源名称", "URL", "来源类别", "访问日期", "支持结论", "证据等级", "原文摘录", "页面定位"],
       "properties": {
         "证据编号": {"$ref": "#/$defs/evidenceId"},
         "来源名称": {"$ref": "#/$defs/freeText"},
@@ -170,7 +175,57 @@
         "来源类别": {"$ref": "#/$defs/freeText"},
         "访问日期": {"type": "string", "format": "date"},
         "支持结论": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/freeText"}},
-        "证据等级": {"$ref": "#/$defs/evidenceLevel"}
+        "证据等级": {"$ref": "#/$defs/evidenceLevel"},
+        "发布日期": {"type": ["string", "null"], "format": "date"},
+        "快照文件": {"$ref": "#/$defs/freeTextOrNull"},
+        "快照哈希": {"$ref": "#/$defs/freeTextOrNull"},
+        "截图编号": {"$ref": "#/$defs/freeTextOrNull"}
+        ,"原文摘录": {"$ref": "#/$defs/freeText"}
+        ,"页面定位": {"$ref": "#/$defs/freeText"}
+      }
+    },
+    "webSearchRecord": {
+      "type": "object", "additionalProperties": false,
+      "required": ["检索编号", "检索词", "入口URL", "访问时间", "访问结果", "提取摘要", "失败原因"],
+      "properties": {
+        "检索编号": {"$ref": "#/$defs/freeText"}, "检索词": {"$ref": "#/$defs/freeText"},
+        "入口URL": {"$ref": "#/$defs/uriOrNull"}, "访问时间": {"$ref": "#/$defs/rfc3339DateTime"},
+        "访问结果": {"$ref": "#/$defs/freeText"}, "提取摘要": {"$ref": "#/$defs/freeText"},
+        "失败原因": {"type": "string"}
+      }
+    },
+    "claimEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["主张编号", "主张", "证据引用", "证据强度", "结论状态", "结论边界", "下一步补证", "冲突说明"],
+      "properties": {
+        "主张编号": {"$ref": "#/$defs/freeText"}, "主张": {"$ref": "#/$defs/freeText"},
+        "证据引用": {"$ref": "#/$defs/evidenceReferences"}, "证据强度": {"$ref": "#/$defs/evidenceLevel"},
+        "结论状态": {"$ref": "#/$defs/conclusionStatus"}, "结论边界": {"$ref": "#/$defs/freeText"},
+        "冲突说明": {"$ref": "#/$defs/freeTextOrNull"},
+        "下一步补证": {"$ref": "#/$defs/freeText"}
+      }
+    },
+    "evidenceCheck": {
+      "type": "object", "additionalProperties": false,
+      "required": ["状态", "证据引用", "说明"],
+      "properties": {
+        "状态": {"type": "string", "enum": ["已取得", "未取得", "不适用", "待核验"]},
+        "证据引用": {"$ref": "#/$defs/evidenceReferences"},
+        "说明": {"$ref": "#/$defs/freeText"}
+      }
+    },
+    "skuEvidenceChecklist": {
+      "type": "object", "additionalProperties": false,
+      "required": ["包装标签", "产品铭牌", "型号或UPC", "说明书Manufacturer", "说明书Importer", "平台销售字段", "合规或监管文件", "证据完整度"],
+      "properties": {
+        "包装标签": {"$ref": "#/$defs/evidenceCheck"},
+        "产品铭牌": {"$ref": "#/$defs/evidenceCheck"},
+        "型号或UPC": {"$ref": "#/$defs/evidenceCheck"},
+        "说明书Manufacturer": {"$ref": "#/$defs/evidenceCheck"},
+        "说明书Importer": {"$ref": "#/$defs/evidenceCheck"},
+        "平台销售字段": {"$ref": "#/$defs/evidenceCheck"},
+        "合规或监管文件": {"$ref": "#/$defs/evidenceCheck"},
+        "证据完整度": {"type": "string", "pattern": "^[0-7]/7$"}
       }
     },
     "brandDisplay": {

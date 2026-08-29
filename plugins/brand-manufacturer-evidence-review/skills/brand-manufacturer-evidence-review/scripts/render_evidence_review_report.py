@@ -388,11 +388,42 @@ def add_execution_summary(document: Document, payload: Mapping[str, Any], tokens
 
 
 def add_evidence_chain(document: Document, payload: Mapping[str, Any], tokens: Mapping[str, Any]) -> None:
-    document.add_heading("证据链方法", level=1)
-    for step in _mappings(payload.get("证据链方法")):
-        document.add_heading(f"{step.get('步骤编号')}：{step.get('名称')}", level=2)
-        _add_label_value(document, "执行方法", str(step.get("执行方法")), tokens)
-        _add_label_value(document, "证据优先级", _joined(_strings(step.get("证据优先级")), "、"), tokens)
+    # Method and search logs remain in JSON for auditability; the DOCX is result-focused.
+    return
+
+
+def add_claim_matrix(document: Document, payload: Mapping[str, Any], tokens: Mapping[str, Any]) -> None:
+    document.add_heading("主张与证据矩阵", level=1)
+    rows = []
+    for claim in _mappings(payload.get("主张证据矩阵")):
+        rows.append([
+            str(claim.get("主张编号")),
+            str(claim.get("主张")),
+            _joined(_strings(claim.get("证据引用")), "、"),
+            str(claim.get("证据强度")),
+            str(claim.get("结论状态")),
+            str(claim.get("结论边界")),
+            str(claim.get("下一步补证")),
+            str(claim.get("冲突说明") or "无"),
+        ])
+    _add_table(document, ["主张编号", "主张", "证据", "强度", "状态", "结论边界", "下一步补证", "冲突"], rows, [9, 22, 9, 9, 9, 18, 14, 10], tokens)
+
+
+def add_sku_checklists(document: Document, payload: Mapping[str, Any], tokens: Mapping[str, Any]) -> None:
+    products = _mappings(_mapping(payload.get("调查范围")).get("代表性商品"))
+    if not products:
+        return
+    document.add_heading("SKU证据完整度", level=1)
+    keys = ("包装标签", "产品铭牌", "型号或UPC", "说明书Manufacturer", "说明书Importer", "平台销售字段", "合规或监管文件")
+    rows = []
+    for product in products:
+        checklist = _mapping(product.get("SKU证据核验"))
+        rows.append([
+            str(product.get("平台标识符") or product.get("商品ID")),
+            str(checklist.get("证据完整度")),
+            _joined((f"{key}:{_mapping(checklist.get(key)).get('状态')}" for key in keys), "；"),
+        ])
+    _add_table(document, ["SKU/平台标识", "完整度", "逐项状态"], rows, [22, 15, 63], tokens)
 
 
 def add_brand_sections(document: Document, payload: Mapping[str, Any], tokens: Mapping[str, Any]) -> None:
@@ -404,8 +435,6 @@ def add_brand_sections(document: Document, payload: Mapping[str, Any], tokens: M
         review = reviews[brand_key]
         document.add_heading(brand_key[1], level=2)
         _add_label_value(document, "查询结果摘要", str(review.get("查询结果摘要")), tokens)
-        for path in _strings(review.get("实际查询路径")):
-            _add_label_value(document, "实际查询路径", path, tokens)
         for line in _relationship_lines(review, entities):
             _add_text(document, line, tokens)
         manufacturing = _mapping(review.get("制造关系"))
@@ -427,8 +456,10 @@ def add_brand_sections(document: Document, payload: Mapping[str, Any], tokens: M
                 str(source.get("访问日期")),
                 _joined(_strings(source.get("支持结论"))),
                 str(source.get("证据等级")),
+                str(source.get("原文摘录")),
+                str(source.get("页面定位")),
             ])
-        _add_table(document, ["证据编号", "来源名称", "URL", "来源类别", "访问日期", "支持结论", "证据等级"], source_rows, [10, 16, 24, 15, 11, 16, 8], tokens)
+        _add_table(document, ["证据编号", "来源名称", "URL", "来源类别", "访问日期", "支持结论", "证据等级", "原文摘录", "页面定位"], source_rows, [8, 13, 18, 11, 9, 13, 8, 14, 6], tokens)
 
 
 def add_entity_summary(document: Document, payload: Mapping[str, Any], tokens: Mapping[str, Any]) -> None:
@@ -487,6 +518,8 @@ def render_report(payload: Mapping[str, Any], output_path: Path, style_path: Pat
     add_cover(document, payload, tokens)
     add_execution_summary(document, payload, tokens)
     add_evidence_chain(document, payload, tokens)
+    add_claim_matrix(document, payload, tokens)
+    add_sku_checklists(document, payload, tokens)
     add_brand_sections(document, payload, tokens)
     add_entity_summary(document, payload, tokens)
     add_overall_classification(document, payload, tokens)
