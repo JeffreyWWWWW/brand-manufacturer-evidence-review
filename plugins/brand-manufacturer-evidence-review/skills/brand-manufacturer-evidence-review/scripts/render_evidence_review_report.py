@@ -20,6 +20,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.validate_evidence_review import assert_valid_payload
+from scripts.check_output_filename import expected_names, validate as validate_output_filename
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -475,6 +476,9 @@ def add_report_note(document: Document, payload: Mapping[str, Any], tokens: Mapp
 
 
 def render_report(payload: Mapping[str, Any], output_path: Path, style_path: Path | None = None) -> Path:
+    _, expected_docx = expected_names(cast(dict, payload))
+    if output_path.name != expected_docx:
+        raise ValueError(f"DOCX_FILENAME_MISMATCH expected={expected_docx} actual={output_path.name}")
     assert_valid_payload(payload, require_confirmed=True)
     output_path = Path(output_path)
     tokens = _load_tokens(Path(style_path) if style_path is not None else DEFAULT_STYLE_PATH)
@@ -507,6 +511,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         payload = json.loads(args.json_path.read_text(encoding="utf-8"))
+        validate_output_filename(payload, args.json_path, args.docx_path)
         render_report(cast(Mapping[str, Any], payload), args.docx_path, args.style_path)
     except (OSError, json.JSONDecodeError, ValueError) as error:
         print(error)

@@ -67,6 +67,8 @@
       "required": ["报告标题", "调查日期", "生成时间", "底稿编号"],
       "properties": {
         "报告标题": {"$ref": "#/$defs/freeText"},
+        "项目名": {"$ref": "#/$defs/freeText"},
+        "项目或品牌范围": {"$ref": "#/$defs/freeText"},
         "调查日期": {"type": "string", "format": "date"},
         "生成时间": {"$ref": "#/$defs/rfc3339DateTime"},
         "底稿编号": {"$ref": "#/$defs/freeText"}
