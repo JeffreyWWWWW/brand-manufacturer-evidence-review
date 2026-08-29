@@ -9,11 +9,18 @@ description: Use when 用户需要调查“品牌背后是谁”，或复核产�
 
 读取原始客户材料，登记 `SRC-xxx` 来源，提取产品、商品和目标品牌；按照 [证据复核规则](references/review-rules.md) 调查并构建符合 [JSON Schema](references/evidence-review.schema.json) 的草稿。
 
-在对话中展示品牌、主体角色、制造范围、可靠性、证据和限制的完整摘要。用户修正后重新校验；只有用户明确确认时才写入最终 JSON。沉默不构成确认。
+首次响应必须直接输出一份完整的中文调查报告，至少包含调查事项、证据范围、品牌/商标权利人、运营主体、母公司或控制主体、制造商/生产商、证据等级、结论、限制与后续核实建议。证据不足的字段不得省略，须明确写“证据不足/待核实”并说明原因。
+
+报告正文结束后必须单独输出以下确认区块，不得以隐含语气结束：
+
+> **请确认报告内容**
+> 以上调查报告是否确认无误？请回复“确认生成文件”，或指出需要修改的事实、主体、证据或表述。
+
+只有用户明确回复确认（例如“确认生成文件”）后，才写入最终 JSON 并生成 DOCX。用户未确认时，不得声称已生成最终文件；用户提出修改时，先修订报告并再次显示该确认区块。
 
 运行 `scripts/check_runtime_dependencies.py` 检查运行依赖。如果缺失依赖，先按其输出的命令从 `requirements-runtime.txt` 安装；然后使用 `scripts/validate_evidence_review.py` 校验最终 JSON。校验通过且用户确认一致后，使用 `scripts/render_evidence_review_report.py` 仅从该 JSON 生成 DOCX，并逐页渲染检查。
 
-最终交付：
+用户确认后的最终交付：
 
 - `outputs/<项目或品牌范围>_品牌权属与制造商证据底稿_<YYYYMMDD>.json`
 - `outputs/<项目或品牌范围>_品牌权属与制造商证据复核报告_<YYYYMMDD>.docx`

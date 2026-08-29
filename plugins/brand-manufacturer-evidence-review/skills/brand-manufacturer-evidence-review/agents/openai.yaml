@@ -1,7 +1,7 @@
 interface:
   display_name: "品牌与制造商证据复核"
   short_description: "核验品牌背后的法律主体与制造关系，并生成可追溯 JSON 和 DOCX。"
-  default_prompt: "Use $brand-manufacturer-evidence-review 复核这些产品品牌对应的商标权利人、运营主体、母公司和制造商，区分品牌级与具体 SKU 证据，并在我确认后生成规范化 JSON 和 DOCX。"
+  default_prompt: "Use $brand-manufacturer-evidence-review 复核这些产品品牌对应的商标权利人、运营主体、母公司和制造商，区分品牌级与具体 SKU 证据；先直接返回完整中文调查报告（证据不足处标明待核实），报告末尾明确请求我确认，只有我回复‘确认生成文件’后再生成规范化 JSON 和 DOCX。"
 
 policy:
   allow_implicit_invocation: true
