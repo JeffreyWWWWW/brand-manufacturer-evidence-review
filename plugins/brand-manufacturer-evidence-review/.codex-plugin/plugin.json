@@ -1,6 +1,6 @@
 {
   "name": "brand-manufacturer-evidence-review",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Review evidence connecting product brands to legal entities and manufacturers, then produce traceable JSON and DOCX reports.",
   "author": {
     "name": "JeffreyWWWWW",
