@@ -193,7 +193,10 @@
         "检索编号": {"$ref": "#/$defs/freeText"}, "检索词": {"$ref": "#/$defs/freeText"},
         "入口URL": {"$ref": "#/$defs/uriOrNull"}, "访问时间": {"$ref": "#/$defs/rfc3339DateTime"},
         "访问结果": {"$ref": "#/$defs/freeText"}, "提取摘要": {"$ref": "#/$defs/freeText"},
-        "失败原因": {"type": "string"}
+        "失败原因": {"type": "string"},
+        "来源引擎": {"$ref": "#/$defs/freeText"},
+        "候选标题": {"$ref": "#/$defs/freeText"},
+        "候选评分": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
       }
     },
     "claimEvidence": {

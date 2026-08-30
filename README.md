@@ -15,6 +15,15 @@ codex plugin add brand-manufacturer-evidence-review@brand-manufacturer-evidence-
 
 首次执行时，skill 会运行 `scripts/check_runtime_dependencies.py`。如果本地 Python 缺少 `jsonschema` 或 `python-docx`，该检查会输出基于插件内 `requirements-runtime.txt` 的精确安装命令。
 
+可选配置 Tavily 作为检索增强器：设置环境变量 `TAVILY_API_KEY` 后，skill 可运行 `scripts/tavily_search.py` 发现第二来源、历史页面和产品文件；未设置时不影响正常调查。Tavily 摘要只能作为候选线索，最终证据仍需回到原始网页、官方登记或可定位的 PDF。PowerShell 示例：
+
+```powershell
+$env:TAVILY_API_KEY = "tvly-..."
+python plugins\brand-manufacturer-evidence-review\skills\brand-manufacturer-evidence-review\scripts\tavily_search.py "CURT manufacturer"
+```
+
+适配器使用标准库调用 Tavily REST API，不新增运行时依赖；网络超时、HTTP 错误或未配置密钥时会返回可记录的状态，不会阻断没有 Tavily 的正常调查。
+
 ## 使用
 
 skill 支持显式和自动触发。需要确定使用它时，在新任务中写出

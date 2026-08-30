@@ -4,6 +4,7 @@ import argparse
 import copy
 import hashlib
 import json
+from urllib.parse import urlparse
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -58,6 +59,20 @@ def _path(*parts: str | int) -> str:
 
 def _issue(issues: list[ValidationIssue], path: str, code: str, message: str) -> None:
     issues.append(ValidationIssue(path, code, message))
+
+
+def _independent_source_hosts(
+    evidence_ids: Iterable[str], evidence_by_id: Mapping[str, Mapping[str, Any]]
+) -> set[str]:
+    hosts: set[str] = set()
+    for evidence_id in evidence_ids:
+        url = evidence_by_id.get(evidence_id, {}).get("URL")
+        if not isinstance(url, str):
+            continue
+        host = urlparse(url).netloc.lower().split("@")[-1].split(":")[0]
+        if host:
+            hosts.add(host.removeprefix("www."))
+    return hosts
 
 
 def _schema_issues(payload: Mapping[str, Any], schema_path: Path) -> list[ValidationIssue]:
@@ -263,6 +278,7 @@ def _check_review_views(
     ids: dict[str, set[str]],
     review_brands: dict[int, str],
     review_evidence: dict[int, set[str]],
+    evidence_by_id: Mapping[str, Mapping[str, Any]],
     issues: list[ValidationIssue],
 ) -> list[tuple[str, str, str]]:
     role_sections = {
@@ -328,6 +344,10 @@ def _check_review_views(
                 if entity_id not in ids["ENT"]:
                     _issue(issues, link_path, "DANGLING_NESTED_ENTITY", "nested entity reference does not identify a declared entity")
                 _check_evidence_refs(_strings(link.get("证据引用")), ids["EVD"], issues, link_path, allowed_evidence)
+                if link.get("结论状态") == "已确认" or link.get("可靠性等级") == "高":
+                    hosts = _independent_source_hosts(_strings(link.get("证据引用")), evidence_by_id)
+                    if len(hosts) < 2:
+                        _issue(issues, link_path, "KEY_RELATION_NEEDS_INDEPENDENT_SOURCES", "key relationship marked confirmed/high requires at least two independent source domains")
                 if brand_id is not None:
                     nested_facts[fact_signature(brand_id, entity_id, section, link, level, ())].append(link_path)
 
@@ -346,6 +366,16 @@ def _check_review_views(
                     products = _strings(link.get("适用商品ID"))
                     if not products or any(product not in ids["PRD"] for product in products):
                         _issue(issues, link_path, "SKU_MANUFACTURER_WITHOUT_PRODUCT", "SKU manufacturer requires at least one declared PRD product")
+                    completeness = []
+                    for product_id in products:
+                        product = next((item for item in _mappings(_mapping(payload.get("调查范围")).get("代表性商品")) if item.get("商品ID") == product_id), {})
+                        raw = str(_mapping(product.get("SKU证据核验")).get("证据完整度", "0/7"))
+                        try:
+                            completeness.append(int(raw.split("/", 1)[0]))
+                        except (ValueError, IndexError):
+                            completeness.append(0)
+                    if completeness and min(completeness) < 2 and (link.get("结论状态") == "已确认" or link.get("可靠性等级") == "高"):
+                        _issue(issues, link_path, "SKU_MANUFACTURER_EVIDENCE_TOO_WEAK", "specific SKU manufacturer marked confirmed/high while product evidence completeness is below 2/7")
                 else:
                     products = []
                 if brand_id is not None:
@@ -550,13 +580,19 @@ def validate_payload(
         return [ValidationIssue("$", "SCHEMA_ERROR", "payload must be an object")]
     issues = _schema_issues(payload, schema_path or DEFAULT_SCHEMA_PATH)
     ids = _declared_ids(payload, issues)
+    evidence_by_id = {
+        str(item.get("证据编号")): item
+        for review in _mappings(payload.get("品牌复核结果"))
+        for item in _mappings(review.get("主要来源"))
+        if isinstance(item.get("证据编号"), str)
+    }
     review_brands, _, review_evidence = _brand_review_ids(payload, ids, issues)
     brand_evidence = {
         brand_id: review_evidence[review_index]
         for review_index, brand_id in review_brands.items()
     }
     entity_brands = _check_relationships(payload, ids, brand_evidence, issues)
-    product_bindings = _check_review_views(payload, ids, review_brands, review_evidence, issues)
+    product_bindings = _check_review_views(payload, ids, review_brands, review_evidence, evidence_by_id, issues)
     _check_entity_view(payload, entity_brands, product_bindings, issues)
     _check_overall_classification(payload, ids, issues)
     _check_research_gate(payload, issues)
