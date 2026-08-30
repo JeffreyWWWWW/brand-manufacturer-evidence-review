@@ -459,7 +459,7 @@ def add_brand_sections(document: Document, payload: Mapping[str, Any], tokens: M
                 str(source.get("原文摘录")),
                 str(source.get("页面定位")),
             ])
-        _add_table(document, ["证据编号", "来源名称", "URL", "来源类别", "访问日期", "支持结论", "证据等级", "原文摘录", "页面定位"], source_rows, [8, 13, 18, 11, 9, 13, 8, 14, 6], tokens)
+        _add_table(document, ["证据编号", "来源名称", "URL", "来源类别", "证据日期", "支持结论", "证据等级", "原文摘录", "页面定位"], source_rows, [8, 13, 18, 11, 9, 13, 8, 14, 6], tokens)
 
 
 def add_entity_summary(document: Document, payload: Mapping[str, Any], tokens: Mapping[str, Any]) -> None:
@@ -487,9 +487,8 @@ def add_overall_classification(document: Document, payload: Mapping[str, Any], t
 
 
 def add_database_access(document: Document, payload: Mapping[str, Any], tokens: Mapping[str, Any]) -> None:
-    document.add_heading("数据库访问", level=1)
-    rows = [[str(item.get(key)) for key in ("数据库", "官方入口", "访问时间", "访问结果", "使用建议")] for item in _mappings(payload.get("数据库访问记录"))]
-    _add_table(document, ["数据库", "官方入口", "访问时间", "访问结果", "使用建议"], rows, [18, 25, 16, 21, 20], tokens)
+    # Database access records remain in JSON for auditability; keep the DOCX result-focused.
+    return
 
 
 def add_limitations(document: Document, payload: Mapping[str, Any], tokens: Mapping[str, Any]) -> None:
@@ -528,7 +527,6 @@ def render_report(payload: Mapping[str, Any], output_path: Path, style_path: Pat
     add_brand_sections(document, payload, tokens)
     add_entity_summary(document, payload, tokens)
     add_overall_classification(document, payload, tokens)
-    add_database_access(document, payload, tokens)
     add_limitations(document, payload, tokens)
     add_report_note(document, payload, tokens)
     output_path.parent.mkdir(parents=True, exist_ok=True)
