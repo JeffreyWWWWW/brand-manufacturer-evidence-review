@@ -6,9 +6,10 @@ original page or an authoritative registry before becoming EVD evidence.
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
-import argparse
+import uuid
 from datetime import datetime, timezone
 from typing import Any, Mapping
 from urllib.error import HTTPError, URLError
@@ -90,7 +91,11 @@ def search(
     try:
         with urlopen(request, timeout=timeout_seconds) as response:
             response_payload = json.loads(response.read().decode("utf-8"))
-        records = normalize_response(response_payload, query_id="TAV-001", accessed_at=accessed_at)
+        records = normalize_response(
+            response_payload,
+            query_id=f"TAV-{uuid.uuid4().hex[:8].upper()}",
+            accessed_at=accessed_at,
+        )
         return {"enabled": True, "reason": "", "records": records}
     except (HTTPError, URLError, TimeoutError, OSError) as error:
         return {"enabled": True, "reason": f"TAVILY_REQUEST_FAILED: {error}", "records": []}

@@ -74,3 +74,23 @@ def test_cli_without_key_emits_disabled_json(monkeypatch, capsys):
 
     assert main(["CURT manufacturer"]) == 0
     assert json.loads(capsys.readouterr().out)["reason"] == "TAVILY_API_KEY_NOT_CONFIGURED"
+
+
+def test_search_uses_unique_batch_id_for_each_api_response(monkeypatch):
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return json.dumps({"query": "CURT", "results": [{"title": "A", "url": "https://a.example", "content": "x"}]}).encode()
+
+    monkeypatch.setenv("TAVILY_API_KEY", "test-key")
+    monkeypatch.setattr("scripts.tavily_search.urlopen", lambda *args, **kwargs: FakeResponse())
+
+    first = search("CURT")["records"][0]["检索编号"]
+    second = search("CURT")["records"][0]["检索编号"]
+
+    assert first != second
