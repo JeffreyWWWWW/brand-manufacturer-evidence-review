@@ -24,6 +24,8 @@ python plugins\brand-manufacturer-evidence-review\skills\brand-manufacturer-evid
 
 适配器使用标准库调用 Tavily REST API，不新增运行时依赖；网络超时、HTTP 错误或未配置密钥时会返回可记录的状态，不会阻断没有 Tavily 的正常调查。
 
+最终 JSON 还会包含自动计算的 `质量摘要`，汇总每个品牌的来源覆盖、独立域名数、SKU 证据完整度、冲突和待补证数量；验证器会拒绝与事实不一致的手工摘要。
+
 ## 使用
 
 skill 支持显式和自动触发。需要确定使用它时，在新任务中写出

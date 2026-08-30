@@ -13,6 +13,11 @@ from typing import Any, Mapping
 
 from jsonschema import Draft202012Validator
 
+try:
+    from scripts.quality_summary import build_quality_summary
+except ModuleNotFoundError:  # direct CLI execution from the scripts directory
+    from quality_summary import build_quality_summary
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SCHEMA_PATH = ROOT / "references" / "evidence-review.schema.json"
@@ -362,6 +367,10 @@ def _check_review_views(
                 if link.get("主体ID") not in ids["ENT"]:
                     _issue(issues, link_path, "DANGLING_NESTED_ENTITY", "nested entity reference does not identify a declared entity")
                 _check_evidence_refs(_strings(link.get("证据引用")), ids["EVD"], issues, link_path, allowed_evidence)
+                if field == "品牌层面主要制造商" and (link.get("结论状态") == "已确认" or link.get("可靠性等级") == "高"):
+                    hosts = _independent_source_hosts(_strings(link.get("证据引用")), evidence_by_id)
+                    if len(hosts) < 2:
+                        _issue(issues, link_path, "KEY_RELATION_NEEDS_INDEPENDENT_SOURCES", "key relationship marked confirmed/high requires at least two independent source domains")
                 if field == "具体SKU制造商":
                     products = _strings(link.get("适用商品ID"))
                     if not products or any(product not in ids["PRD"] for product in products):
@@ -573,6 +582,13 @@ def _check_sku_completeness(payload: Mapping[str, Any], issues: list[ValidationI
             _issue(issues, _path("调查范围", "代表性商品", index, "SKU证据核验", "证据完整度"), "SKU_COMPLETENESS_MISMATCH", f"expected {expected}, got {checklist.get('证据完整度')}")
 
 
+def _check_quality_summary(payload: Mapping[str, Any], issues: list[ValidationIssue]) -> None:
+    expected = build_quality_summary(payload)
+    actual = payload.get("质量摘要")
+    if actual != expected:
+        _issue(issues, _path("质量摘要"), "QUALITY_SUMMARY_MISMATCH", "quality summary must match deterministic facts derived from the payload")
+
+
 def validate_payload(
     payload: Mapping[str, Any], schema_path: Path | None = None, require_confirmed: bool = False
 ) -> list[ValidationIssue]:
@@ -597,6 +613,7 @@ def validate_payload(
     _check_overall_classification(payload, ids, issues)
     _check_research_gate(payload, issues)
     _check_sku_completeness(payload, issues)
+    _check_quality_summary(payload, issues)
     _check_confirmation(payload, issues, require_confirmed)
     return sorted(set(issues))
 

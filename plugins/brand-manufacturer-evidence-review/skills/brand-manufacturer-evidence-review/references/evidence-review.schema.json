@@ -17,6 +17,7 @@
     "总体复核分级",
     "数据库访问记录",
     "使用限制与建议",
+    "质量摘要",
     "用户确认"
   ],
   "properties": {
@@ -34,6 +35,7 @@
     "总体复核分级": {"type": "array", "items": {"$ref": "#/$defs/overallClass"}},
     "数据库访问记录": {"type": "array", "items": {"$ref": "#/$defs/databaseAccess"}},
     "使用限制与建议": {"type": "array", "items": {"$ref": "#/$defs/freeText"}},
+    "质量摘要": {"$ref": "#/$defs/qualitySummary"},
     "用户确认": {"$ref": "#/$defs/confirmation"}
   },
   "$defs": {
@@ -358,6 +360,27 @@
         "访问时间": {"$ref": "#/$defs/rfc3339DateTime"},
         "访问结果": {"$ref": "#/$defs/freeText"},
         "使用建议": {"$ref": "#/$defs/freeText"}
+      }
+    },
+    "qualityBrandSummary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["品牌ID", "主要来源数", "独立来源域名数", "关键角色覆盖", "SKU证据完整度", "冲突数", "待补证数"],
+      "properties": {
+        "品牌ID": {"$ref": "#/$defs/brandId"},
+        "主要来源数": {"type": "integer", "minimum": 0},
+        "独立来源域名数": {"type": "integer", "minimum": 0},
+        "关键角色覆盖": {"type": "array", "items": {"$ref": "#/$defs/freeText"}},
+        "SKU证据完整度": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["商品ID", "证据完整度"], "properties": {"商品ID": {"$ref": "#/$defs/productId"}, "证据完整度": {"type": "string", "pattern": "^[0-7]/7$"}}}},
+        "冲突数": {"type": "integer", "minimum": 0},
+        "待补证数": {"type": "integer", "minimum": 0}
+      }
+    },
+    "qualitySummary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["品牌", "总体"],
+      "properties": {
+        "品牌": {"type": "array", "items": {"$ref": "#/$defs/qualityBrandSummary"}},
+        "总体": {"type": "object", "additionalProperties": false, "required": ["品牌数量", "冲突数", "待补证数"], "properties": {"品牌数量": {"type": "integer", "minimum": 0}, "冲突数": {"type": "integer", "minimum": 0}, "待补证数": {"type": "integer", "minimum": 0}}}
       }
     },
     "confirmation": {
