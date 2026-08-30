@@ -500,6 +500,8 @@ def add_limitations(document: Document, payload: Mapping[str, Any], tokens: Mapp
 
 def add_report_note(document: Document, payload: Mapping[str, Any], tokens: Mapping[str, Any]) -> None:
     document.add_heading("报告说明", level=1)
+    _add_label_value(document, "Skill版本", str(payload.get("Skill版本")), tokens)
+    _add_label_value(document, "规范版本", str(payload.get("规范版本")), tokens)
     confirmation = _mapping(payload.get("用户确认"))
     _add_label_value(document, "确认时间", str(confirmation.get("确认时间")), tokens)
     _add_label_value(document, "用户确认原文", str(confirmation.get("用户确认原文")), tokens)

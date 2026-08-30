@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- 版本唯一来源为 `.codex-plugin/plugin.json` 的 `version`，当前值 `1.0.3`。
+- 版本唯一来源为 `.codex-plugin/plugin.json` 的 `version`，本次更新值为 `1.0.4`。
 - `Skill版本` 表示执行 skill 版本；`规范版本` 表示 JSON 数据规范版本，二者均保留。
 - 缺少 `Skill版本` 的 JSON 必须被 Schema 拒绝，不生成正式 DOCX。
 - DOCX 页脚继续只显示页码，版本仅在“报告说明”出现。

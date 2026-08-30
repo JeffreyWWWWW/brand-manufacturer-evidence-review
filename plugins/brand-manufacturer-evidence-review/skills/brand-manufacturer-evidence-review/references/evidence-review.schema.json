@@ -3,6 +3,7 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "Skill版本",
     "规范版本",
     "报告信息",
     "输入材料",
@@ -19,6 +20,7 @@
     "用户确认"
   ],
   "properties": {
+    "Skill版本": {"$ref": "#/$defs/freeText"},
     "规范版本": {"$ref": "#/$defs/freeText"},
     "报告信息": {"$ref": "#/$defs/reportInfo"},
     "输入材料": {"type": "array", "items": {"$ref": "#/$defs/inputSource"}},
