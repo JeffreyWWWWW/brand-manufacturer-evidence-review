@@ -206,6 +206,43 @@ def _brand_review_ids(
     return review_brand, review_count, review_evidence
 
 
+def _check_brand_search_audit(payload: Mapping[str, Any], issues: list[ValidationIssue]) -> None:
+    search_by_id = {
+        item["检索编号"]: item
+        for item in _mappings(payload.get("网络检索记录"))
+        if isinstance(item.get("检索编号"), str)
+    }
+    for index, review in enumerate(_mappings(payload.get("品牌复核结果"))):
+        references = _strings(review.get("检索记录引用"))
+        referenced_records = []
+        for reference in references:
+            record = search_by_id.get(reference)
+            if record is None:
+                _issue(
+                    issues,
+                    _path("品牌复核结果", index, "检索记录引用"),
+                    "MISSING_WEB_SEARCH_REFERENCE",
+                    f"{reference} does not identify a declared WEB search record",
+                )
+            else:
+                referenced_records.append(record)
+
+        claims_tavily = any(
+            "tavily" in path.lower() for path in _strings(review.get("实际查询路径"))
+        )
+        references_tavily = any(
+            "tavily" in str(record.get("来源引擎", "")).lower()
+            for record in referenced_records
+        )
+        if claims_tavily and not references_tavily:
+            _issue(
+                issues,
+                _path("品牌复核结果", index, "实际查询路径"),
+                "TAVILY_QUERY_PATH_WITHOUT_REFERENCE",
+                "brand review claims Tavily use without referencing a Tavily WEB search record",
+            )
+
+
 def _endpoint_exists(endpoint_type: Any, endpoint_id: Any, ids: dict[str, set[str]]) -> bool:
     prefixes = {"品牌": "BRD", "主体": "ENT", "商品": "PRD"}
     prefix = prefixes.get(endpoint_type)
@@ -603,6 +640,7 @@ def validate_payload(
         if isinstance(item.get("证据编号"), str)
     }
     review_brands, _, review_evidence = _brand_review_ids(payload, ids, issues)
+    _check_brand_search_audit(payload, issues)
     brand_evidence = {
         brand_id: review_evidence[review_index]
         for review_index, brand_id in review_brands.items()
