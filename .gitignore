@@ -13,7 +13,6 @@ htmlcov/
 Thumbs.db
 .worktrees/
 /docs/superpowers/
-/tests/
 outputs/verification/
 weight-distribution-hitch/
 tests/fixtures/weight-distribution-hitch/

@@ -9,4 +9,4 @@ def test_pytest_only_collects_the_maintained_test_suite():
     config = ConfigParser()
     config.read(ROOT / "pytest.ini", encoding="utf-8")
 
-    assert config["pytest"]["testpaths"].split() == ["qa_vevor"]
+    assert config["pytest"]["testpaths"].split() == ["tests"]
