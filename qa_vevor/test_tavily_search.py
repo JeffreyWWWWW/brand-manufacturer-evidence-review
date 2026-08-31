@@ -94,3 +94,54 @@ def test_search_uses_unique_batch_id_for_each_api_response(monkeypatch):
     second = search("CURT")["records"][0]["检索编号"]
 
     assert first != second
+
+
+def test_search_requests_twenty_candidates_by_default(monkeypatch):
+    captured = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return json.dumps({"query": "CURT", "results": []}).encode()
+
+    def fake_urlopen(request, timeout):
+        captured["payload"] = json.loads(request.data.decode("utf-8"))
+        return FakeResponse()
+
+    monkeypatch.setenv("TAVILY_API_KEY", "test-key")
+    monkeypatch.setattr("scripts.tavily_search.urlopen", fake_urlopen)
+
+    search("CURT")
+
+    assert captured["payload"]["max_results"] == 20
+
+
+def test_cli_requests_twenty_candidates_by_default(monkeypatch, capsys):
+    captured = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return json.dumps({"query": "CURT", "results": []}).encode()
+
+    def fake_urlopen(request, timeout):
+        captured["payload"] = json.loads(request.data.decode("utf-8"))
+        return FakeResponse()
+
+    monkeypatch.setenv("TAVILY_API_KEY", "test-key")
+    monkeypatch.setattr("scripts.tavily_search.urlopen", fake_urlopen)
+
+    assert main(["CURT"]) == 0
+    capsys.readouterr()
+
+    assert captured["payload"]["max_results"] == 20

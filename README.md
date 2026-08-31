@@ -22,7 +22,7 @@ $env:TAVILY_API_KEY = "tvly-..."
 python plugins\brand-manufacturer-evidence-review\skills\brand-manufacturer-evidence-review\scripts\tavily_search.py "CURT manufacturer"
 ```
 
-适配器使用标准库调用 Tavily REST API，不新增运行时依赖；网络超时、HTTP 错误或未配置密钥时会返回可记录的状态，不会阻断没有 Tavily 的正常调查。
+适配器使用 `advanced` 搜索并默认返回 20 条候选结果；可通过 `--max-results` 下调数量。Agent 会优先核验官方域名、监管数据库、PDF 和独立来源域名，并过滤重复或低价值候选。适配器使用标准库调用 Tavily REST API，不新增运行时依赖；网络超时、HTTP 错误或未配置密钥时会返回可记录的状态，不会阻断没有 Tavily 的正常调查。
 
 最终 JSON 还会包含自动计算的 `质量摘要`，汇总每个品牌的来源覆盖、独立域名数、SKU 证据完整度、冲突和待补证数量；验证器会拒绝与事实不一致的手工摘要。
 

@@ -19,6 +19,7 @@ from urllib.request import Request, urlopen
 
 DEFAULT_ENDPOINT = "https://api.tavily.com/search"
 DEFAULT_TIMEOUT_SECONDS = 20
+DEFAULT_MAX_RESULTS = 20
 
 
 class TavilyConfigError(ValueError):
@@ -70,7 +71,7 @@ def normalize_response(
 def search(
     query: str,
     *,
-    max_results: int = 5,
+    max_results: int = DEFAULT_MAX_RESULTS,
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     endpoint: str = DEFAULT_ENDPOINT,
 ) -> dict[str, Any]:
@@ -106,7 +107,7 @@ def search(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run optional Tavily discovery search.")
     parser.add_argument("query")
-    parser.add_argument("--max-results", type=int, default=5)
+    parser.add_argument("--max-results", type=int, default=DEFAULT_MAX_RESULTS)
     args = parser.parse_args(argv)
     result = search(args.query, max_results=args.max_results)
     print(json.dumps(result, ensure_ascii=False, indent=2))
