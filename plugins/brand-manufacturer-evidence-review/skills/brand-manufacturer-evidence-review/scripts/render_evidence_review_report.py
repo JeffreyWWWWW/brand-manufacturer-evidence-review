@@ -14,6 +14,7 @@ from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.shared import Mm, Pt, RGBColor, Twips
 
 if __package__ in {None, ""}:
@@ -303,7 +304,44 @@ def _set_table_borders(table, color: str) -> None:
     table._tbl.tblPr.append(borders)
 
 
-def _add_table(document: Document, headers: list[str], rows: list[list[str]], weights: list[int], tokens: Mapping[str, Any]) -> None:
+def _add_hyperlink(paragraph, text: str, url: str, tokens: Mapping[str, Any]) -> None:
+    relationship_id = paragraph.part.relate_to(url, RT.HYPERLINK, is_external=True)
+    hyperlink = OxmlElement("w:hyperlink")
+    hyperlink.set(qn("r:id"), relationship_id)
+    run = OxmlElement("w:r")
+    run_properties = OxmlElement("w:rPr")
+    fonts = _mapping(tokens["fonts"])
+    run_fonts = OxmlElement("w:rFonts")
+    run_fonts.set(qn("w:ascii"), str(fonts["latin"]))
+    run_fonts.set(qn("w:hAnsi"), str(fonts["latin"]))
+    run_fonts.set(qn("w:eastAsia"), str(fonts["east_asia"]))
+    font_size = str(int(round(float(_mapping(tokens["sizes_pt"])["table"]) * 2)))
+    size = OxmlElement("w:sz")
+    size.set(qn("w:val"), font_size)
+    complex_script_size = OxmlElement("w:szCs")
+    complex_script_size.set(qn("w:val"), font_size)
+    color = OxmlElement("w:color")
+    color.set(qn("w:val"), str(_mapping(tokens["colors"])["primary"]))
+    underline = OxmlElement("w:u")
+    underline.set(qn("w:val"), "single")
+    run_properties.extend((run_fonts, color, size, complex_script_size, underline))
+    run.append(run_properties)
+    text_element = OxmlElement("w:t")
+    text_element.text = text
+    run.append(text_element)
+    hyperlink.append(run)
+    paragraph._p.append(hyperlink)
+
+
+def _add_table(
+    document: Document,
+    headers: list[str],
+    rows: list[list[str]],
+    weights: list[int],
+    tokens: Mapping[str, Any],
+    *,
+    hyperlink_columns: frozenset[int] = frozenset(),
+) -> None:
     content_width = int(round((document.sections[0].page_width.twips - document.sections[0].left_margin.twips - document.sections[0].right_margin.twips)))
     indent = int(_mapping(tokens["table"])["cell_margin_twips"])
     available_width = content_width - indent
@@ -327,8 +365,11 @@ def _add_table(document: Document, headers: list[str], rows: list[list[str]], we
         for index, value in enumerate(row_values):
             paragraph = row.cells[index].paragraphs[0]
             paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER if len(value) <= 14 else WD_ALIGN_PARAGRAPH.LEFT
-            run = paragraph.add_run(value)
-            _set_run_font(run, tokens, float(_mapping(tokens["sizes_pt"])["table"]), str(_mapping(tokens["colors"])["text"]))
+            if index in hyperlink_columns and value:
+                _add_hyperlink(paragraph, value, value, tokens)
+            else:
+                run = paragraph.add_run(value)
+                _set_run_font(run, tokens, float(_mapping(tokens["sizes_pt"])["table"]), str(_mapping(tokens["colors"])["text"]))
     _apply_table_geometry(table, widths, tokens)
     document.add_paragraph().paragraph_format.space_after = Pt(0)
 
@@ -448,10 +489,11 @@ def add_brand_sections(document: Document, payload: Mapping[str, Any], tokens: M
             _add_label_value(document, "关键说明", note, tokens)
         source_rows = []
         for source in _mappings(review.get("主要来源")):
+            source_url = source.get("URL")
             source_rows.append([
                 str(source.get("证据编号")),
                 str(source.get("来源名称")),
-                str(source.get("URL")),
+                source_url if isinstance(source_url, str) else "",
                 str(source.get("来源类别")),
                 str(source.get("访问日期")),
                 _joined(_strings(source.get("支持结论"))),
@@ -459,7 +501,14 @@ def add_brand_sections(document: Document, payload: Mapping[str, Any], tokens: M
                 str(source.get("原文摘录")),
                 str(source.get("页面定位")),
             ])
-        _add_table(document, ["证据编号", "来源名称", "URL", "来源类别", "证据日期", "支持结论", "证据等级", "原文摘录", "页面定位"], source_rows, [8, 13, 18, 11, 9, 13, 8, 14, 6], tokens)
+        _add_table(
+            document,
+            ["证据编号", "来源名称", "URL", "来源类别", "证据日期", "支持结论", "证据等级", "原文摘录", "页面定位"],
+            source_rows,
+            [8, 13, 18, 11, 9, 13, 8, 14, 6],
+            tokens,
+            hyperlink_columns=frozenset({2}),
+        )
 
 
 def add_entity_summary(document: Document, payload: Mapping[str, Any], tokens: Mapping[str, Any]) -> None:
